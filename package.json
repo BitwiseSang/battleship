@@ -9,10 +9,14 @@
     "preview": "vite preview",
     "test": "vitest",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix"
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
   },
   "devDependencies": {
+    "oxfmt": "^0.68.0",
     "oxlint": "^1.83.0",
+    "oxlint-tsgolint": "^7.0.2001",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vitest": "^5.0.1"
