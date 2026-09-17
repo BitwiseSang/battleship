@@ -1,4 +1,5 @@
 import { beforeEach, describe, test, expect } from "vitest";
+
 import Ship from "./ship.ts";
 
 let newShip: Ship;

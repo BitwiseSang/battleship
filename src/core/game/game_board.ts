@@ -1,3 +1,5 @@
+import notationToPosition from "../../utils/notation-converter.ts";
+import Ship from "../ship/ship.ts";
 import type {
   Attack,
   Attacks,
@@ -8,8 +10,6 @@ import type {
   Ships,
   ShipInformation,
 } from "./types.ts";
-import Ship from "../ship/ship.ts";
-import notationToPosition from "../../utils/notation-converter.ts";
 
 export default class GameBoard {
   board: Board;

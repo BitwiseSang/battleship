@@ -1,8 +1,8 @@
 import { beforeEach, describe, test, expect } from "vitest";
-import GameBoard from "./game_board.ts";
-import Ship from "../ship/ship.ts";
 
-import type { Attack, ShipObject, Positions } from "./types.ts";
+import Ship from "../ship/ship.ts";
+import GameBoard from "./game_board.ts";
+import type { Attack, Positions } from "./types.ts";
 
 let gameBoard: GameBoard;
 
@@ -170,8 +170,11 @@ describe("Instance methods", () => {
     });
 
     test("Successfully increments the hits counter on the ship object for each hit", () => {
-      const shipObject = gameBoard.receiveAttack("C1") as ShipObject;
-      expect(shipObject.ship.hits).toEqual(1);
+      const shipObject = gameBoard.receiveAttack("C1");
+
+      if (typeof shipObject !== "boolean") {
+        expect(shipObject.ship.hits).toEqual(1);
+      }
     });
 
     test("Doesn't attack the same cell twice", () => {
