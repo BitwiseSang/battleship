@@ -1,9 +1,11 @@
 export default class Ship {
-  length: number;
+  readonly length: number;
   hits: number;
+  readonly name: string;
 
-  constructor(length: number) {
+  constructor(length: number, name: string) {
     this.length = length;
+    this.name = name;
     this.hits = 0;
   }
 

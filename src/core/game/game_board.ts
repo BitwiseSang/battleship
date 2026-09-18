@@ -1,23 +1,24 @@
-import notationToPosition from "../../utils/notation-converter.ts";
-import Ship from "../ship/ship.ts";
 import type {
   Attack,
   Attacks,
+  AttackResult,
   Positions,
   Position,
   Board,
   ShipObject,
   Ships,
   ShipInformation,
+  PlacementResult,
+  ReadOnlyBoard,
 } from "./types.ts";
 
 export default class GameBoard {
-  board: Board;
-  ships: Ships;
-  attacks: Attacks;
+  #board: Board;
+  readonly ships: Ships;
+  readonly attacks: Attacks;
 
   constructor() {
-    this.board = Array.from({ length: 10 }, () =>
+    this.#board = Array.from({ length: 10 }, () =>
       Array.from({ length: 10 }, () => undefined),
     );
 
@@ -25,38 +26,55 @@ export default class GameBoard {
     this.attacks = [];
   }
 
-  placeShip({
-    name,
-    startPosition,
-    endPosition,
-    ship,
-  }: ShipInformation): boolean {
-    const positions: Positions = this.#extrapolatePositions(
-      startPosition,
-      endPosition,
-    );
-
-    // If positions is on diagonals OR
+  placeShip({ ship, positions }: ShipInformation): PlacementResult {
     // If positions are not equal to the ship's length.
-    if (!positions || positions.length !== ship.length) return false;
+
+    if (positions === undefined)
+      return {
+        type: "invalid",
+        reason: "diagonal",
+      };
+
+    if (
+      positions.some(
+        (position) => !this.#validateCoordinates(position[0], position[1]),
+      )
+    )
+      return { type: "invalid", reason: "out-of-bounds" };
+
+    if (positions.length !== ship.length)
+      return {
+        type: "invalid",
+        reason: "wrong-length",
+        expected: ship.length,
+        actual: positions.length,
+      };
 
     // If any of the ship's position is already occupied by a ship already.
     if (
-      positions.some((position: Position): Ship | undefined => {
+      positions.some((position: Position): boolean => {
         const [row, col] = position;
-        return this.board[row][col];
+        return this.board[row][col] !== undefined;
       })
     )
-      return false;
+      return {
+        type: "invalid",
+        reason: "occupied",
+      };
 
-    positions.forEach((position: number[]): void => {
+    positions.forEach((position: Position): void => {
       const [row, col] = position;
-      this.board[row][col] = ship;
+      this.#board[row][col] = ship;
     });
 
-    this.ships.push({ name, ship, position: positions });
+    const shipPositions: Positions = positions.map(([row, col]: Position) => [
+      row,
+      col,
+    ]);
 
-    return true;
+    this.ships.push({ ship, position: shipPositions });
+
+    return { type: "placed" };
   }
 
   get hits(): Positions {
@@ -71,43 +89,8 @@ export default class GameBoard {
       .map((attack) => attack.position);
   }
 
-  // #isEmpty(row: number, col: number): boolean {
-  //   return this.board[row][col] ? false : true;
-  // }
-
-  #extrapolatePositions(
-    startPosition: string,
-    endPosition: string,
-  ): Positions | undefined {
-    const [startRow, startCol] = notationToPosition(startPosition);
-    const [endRow, endCol] = notationToPosition(endPosition);
-
-    let positions;
-
-    if (
-      Math.abs(endRow - startRow) === 0 &&
-      Math.abs(endCol - startCol) !== 0
-    ) {
-      positions = Array.from(
-        { length: endCol - startCol + 1 },
-        (_: undefined, i: number): Position => {
-          const minimumColumnValue: number = Math.min(startCol, endCol);
-          return [startRow, minimumColumnValue + i];
-        },
-      );
-    } else if (Math.abs(endCol - startCol) === 0) {
-      positions = Array.from(
-        { length: endRow - startRow + 1 },
-        (_: undefined, i: number): Position => {
-          const minimumRowValue: number = Math.min(startRow, endRow);
-          return [minimumRowValue + i, startCol];
-        },
-      );
-    } else {
-      positions = undefined;
-    }
-
-    return positions;
+  get board(): ReadOnlyBoard {
+    return this.#board;
   }
 
   #validateCoordinates(row: number, col: number): boolean {
@@ -117,11 +100,14 @@ export default class GameBoard {
     return false;
   }
 
-  receiveAttack(position: string): ShipObject | boolean {
-    const [row, col] = notationToPosition(position);
-    if (!this.#validateCoordinates(row, col)) return false;
+  receiveAttack(position: Position): AttackResult {
+    const [row, col] = position;
 
-    if (this.#hasBeenAttacked(row, col)) return false;
+    if (!this.#validateCoordinates(row, col))
+      return { type: "invalid", reason: "invalid-coordinates" };
+
+    if (this.#hasBeenAttacked(row, col))
+      return { type: "invalid", reason: "attacked" };
 
     const shipPresent = this.board[row][col] !== undefined;
 
@@ -131,7 +117,9 @@ export default class GameBoard {
 
     if (shipObject) shipObject.ship.hit();
 
-    return shipObject ? shipObject : true;
+    return shipObject
+      ? { type: "hit", ship: shipObject.ship }
+      : { type: "miss" };
   }
 
   allShipsSunk(): boolean {

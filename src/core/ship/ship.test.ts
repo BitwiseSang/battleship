@@ -7,7 +7,7 @@ let length: number;
 
 beforeEach(() => {
   length = 2;
-  newShip = new Ship(length);
+  newShip = new Ship(length, "test");
 });
 
 describe("Initialization", () => {

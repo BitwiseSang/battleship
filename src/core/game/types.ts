@@ -1,29 +1,56 @@
 import type { Ship } from "../ship/types.ts";
 
 export type Board = Array<Array<Ship | undefined>>;
+export type ReadOnlyBoard = readonly (readonly (Ship | undefined)[])[];
 
 export type ShipObject = {
   ship: Ship;
-  name: string;
-  position: number[][];
+  position: readonly Position[];
 };
 
-export type Position = Array<number>;
+export type Position = readonly [number, number];
 
 export type Positions = Array<Position> | undefined;
 
 export type Attack = {
-  position: Position;
-  hit: boolean;
+  readonly position: Position;
+  readonly hit: boolean;
 };
 
 export type Ships = Array<ShipObject>;
+export type ReadOnlyShips = readonly ShipObject[];
 
-export type Attacks = Array<Attack>;
+export type Attacks = Attack[];
 
 export type ShipInformation = {
-  name: string;
-  startPosition: string;
-  endPosition: string;
+  positions: Positions;
   ship: Ship;
 };
+
+export type AttackResult =
+  | {
+      type: "invalid";
+      reason: "invalid-coordinates" | "attacked";
+    }
+  | {
+      type: "hit";
+      ship: Ship;
+    }
+  | {
+      type: "miss";
+    };
+
+export type PlacementResult =
+  | {
+      type: "placed";
+    }
+  | {
+      type: "invalid";
+      reason: "diagonal" | "out-of-bounds" | "occupied";
+    }
+  | {
+      type: "invalid";
+      reason: "wrong-length";
+      expected: number;
+      actual: number;
+    };
