@@ -1,11 +1,11 @@
-import type GameBoard from "../game/game_board";
+import type GameBoard from "../board/game_board";
 import type {
   Attacks,
   AttackResult,
   PlacementResult,
   Position,
   ShipInformation,
-} from "../game/types";
+} from "../board/types";
 
 export default class Player {
   #board: GameBoard;

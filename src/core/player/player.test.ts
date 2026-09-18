@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from "vitest";
 
-import GameBoard from "../game/game_board.ts";
+import GameBoard from "../board/game_board.ts";
 import Ship from "../ship/ship.ts";
 import Player from "./player.ts";
 

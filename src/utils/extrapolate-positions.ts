@@ -1,4 +1,4 @@
-import type { Position, Positions } from "../core/game/types";
+import type { Position, Positions } from "../core/board/types";
 
 export function extrapolatePositions(
   start: Position,
