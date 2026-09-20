@@ -23,6 +23,10 @@ export default class Player {
     return this.#board.receiveAttack(position);
   }
 
+  hasLost(): boolean {
+    return this.#board.allShipsSunk();
+  }
+
   get board(): GameBoard {
     return this.#board;
   }

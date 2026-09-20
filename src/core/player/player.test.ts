@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from "vitest";
+import { vi, describe, test, expect, beforeEach } from "vitest";
 
 import GameBoard from "../board/game_board.ts";
 import Ship from "../ship/ship.ts";
@@ -46,6 +46,7 @@ describe("Instance methods", () => {
 
     test("Registers a hit if a ship is present in the frame", () => {
       const ship = new Ship(2, "Patrol Ship");
+      const spy = vi.spyOn(ship, "hit");
 
       player.placeShip({
         ship,
@@ -56,7 +57,34 @@ describe("Instance methods", () => {
       });
 
       expect(player.receiveAttack([0, 0])).toMatchObject({ type: "hit" });
-      expect(ship.hits).toEqual(1);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe(".hasLost()", () => {
+    let ship;
+
+    beforeEach(() => {
+      ship = new Ship(2, "Patrol Ship");
+
+      player.placeShip({
+        ship,
+        positions: [
+          [0, 0],
+          [0, 1],
+        ],
+      });
+    });
+
+    test("returns true if all ships are sunk", () => {
+      expect(player.receiveAttack([0, 0])).toMatchObject({ type: "hit" });
+      expect(player.receiveAttack([0, 1])).toMatchObject({ type: "hit" });
+
+      expect(player.hasLost()).toBeTruthy();
+    });
+
+    test("returns false if all ships are not sunk", () => {
+      expect(player.hasLost()).toBeFalsy();
     });
   });
 });
