@@ -1,3 +1,4 @@
+import type Ship from "../ship/ship.ts";
 import type {
   Attack,
   Attacks,
@@ -12,10 +13,17 @@ import type {
   ReadOnlyBoard,
 } from "./types.ts";
 
+interface RandomPositionInfo {
+  staticValue: number;
+  dynamicValue: number;
+  length: number;
+  isRowStatic: boolean;
+}
+
 export default class GameBoard {
   #board: Board;
-  readonly ships: Ships;
-  readonly attacks: Attacks;
+  ships: Ships;
+  attacks: Attacks;
 
   constructor() {
     this.#board = Array.from({ length: 10 }, () =>
@@ -24,6 +32,22 @@ export default class GameBoard {
 
     this.ships = [];
     this.attacks = [];
+  }
+
+  get hits(): Positions {
+    return this.attacks
+      .filter((attack) => attack.hit)
+      .map((attack) => attack.position);
+  }
+
+  get misses(): Positions {
+    return this.attacks
+      .filter((attack) => !attack.hit)
+      .map((attack) => attack.position);
+  }
+
+  get board(): ReadOnlyBoard {
+    return this.#board;
   }
 
   placeShip({ ship, positions }: ShipInformation): PlacementResult {
@@ -52,10 +76,9 @@ export default class GameBoard {
 
     // If any of the ship's position is already occupied by a ship already.
     if (
-      positions.some((position: Position): boolean => {
-        const [row, col] = position;
-        return this.board[row][col] !== undefined;
-      })
+      positions.some((position: Position): boolean =>
+        this.#hasBeenOccupied(position[0], position[1]),
+      )
     )
       return {
         type: "invalid",
@@ -77,27 +100,32 @@ export default class GameBoard {
     return { type: "placed" };
   }
 
-  get hits(): Positions {
-    return this.attacks
-      .filter((attack) => attack.hit)
-      .map((attack) => attack.position);
-  }
+  placeShipRandomly(ship: Ship): PlacementResult {
+    let positions: Positions;
+    const length: number = ship.length;
 
-  get misses(): Positions {
-    return this.attacks
-      .filter((attack) => !attack.hit)
-      .map((attack) => attack.position);
-  }
+    while (
+      positions === undefined ||
+      positions.some((position) => {
+        const [row, col] = position;
+        return this.#hasBeenOccupied(row, col);
+      })
+    ) {
+      const [row, col] = this.#getRandomCoordinates();
 
-  get board(): ReadOnlyBoard {
-    return this.#board;
-  }
+      const isRowStatic: boolean = Boolean(Math.round(Math.random()));
+      const staticValue: number = isRowStatic ? row : col;
+      const dynamicValue: number = !isRowStatic ? row : col;
 
-  #validateCoordinates(row: number, col: number): boolean {
-    if (row >= 0 && row <= 9 && col >= 0 && col <= 9) {
-      return true;
+      positions = this.#getRandomPositions({
+        staticValue,
+        dynamicValue,
+        length,
+        isRowStatic,
+      });
     }
-    return false;
+
+    return this.placeShip({ ship, positions });
   }
 
   receiveAttack(position: Position): AttackResult {
@@ -128,6 +156,42 @@ export default class GameBoard {
     );
   }
 
+  resetBoard(): void {
+    this.#board = Array.from({ length: 10 }, () =>
+      Array.from({ length: 10 }, () => undefined),
+    );
+
+    this.ships = [];
+    this.attacks = [];
+  }
+
+  hasValidFleet(): boolean {
+    const allShipsHaveValidNames = this.ships.every((shipInfo) =>
+      [
+        "Destroyer",
+        "Submarine",
+        "Patrol Ship",
+        "Carrier",
+        "Battleship",
+      ].includes(shipInfo.ship.name),
+    );
+    const allShipsHaveValidLength = this.ships.every((shipInfo) =>
+      [5, 4, 3, 2].includes(shipInfo.ship.length),
+    );
+    const hasTwoShipsOfLengthThree =
+      this.ships.filter((shipInfo) => shipInfo.ship.length === 3).length === 2;
+    const hasFourUniqueLengthValues =
+      new Set(this.ships.map((shipInfo) => shipInfo.ship.length)).size === 4;
+
+    return (
+      this.ships.length === 5 &&
+      allShipsHaveValidNames &&
+      allShipsHaveValidLength &&
+      hasTwoShipsOfLengthThree &&
+      hasFourUniqueLengthValues
+    );
+  }
+
   #getShip(row: number, col: number): ShipObject | undefined {
     return this.ships.find((ship: ShipObject): boolean =>
       ship.position.some(
@@ -142,5 +206,44 @@ export default class GameBoard {
       (attack: Attack): boolean =>
         attack.position[0] === row && attack.position[1] === col,
     );
+  }
+
+  #validateCoordinates(row: number, col: number): boolean {
+    if (row >= 0 && row <= 9 && col >= 0 && col <= 9) {
+      return true;
+    }
+    return false;
+  }
+
+  #hasBeenOccupied(row: number, col: number): boolean {
+    return this.#board[row][col] !== undefined;
+  }
+
+  #getRandomPositions({
+    staticValue,
+    dynamicValue,
+    length,
+    isRowStatic,
+  }: RandomPositionInfo): Positions {
+    const max = 9;
+    const positions: Positions = [];
+    let increment: number = dynamicValue + length > max ? -1 : 1;
+
+    for (let i = 0; i < length; i++) {
+      const row = isRowStatic ? staticValue : dynamicValue;
+      const col = isRowStatic ? dynamicValue : staticValue;
+
+      positions.push([row, col]);
+      dynamicValue += increment;
+    }
+
+    return positions;
+  }
+
+  #getRandomCoordinates(): Position {
+    const max = 9;
+    const row = Math.floor(Math.random() * max);
+    const col = Math.floor(Math.random() * max);
+    return [row, col];
   }
 }

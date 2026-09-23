@@ -321,4 +321,109 @@ describe("Instance methods", () => {
       expect(gameBoard.allShipsSunk()).toBeTruthy();
     });
   });
+
+  describe(".placeShipRandomly() method", () => {
+    test("Places one ship on a random location", () => {
+      const ship = new Ship(2, "Patrol Ship");
+      expect(gameBoard.placeShipRandomly(ship)).toMatchObject({
+        type: "placed",
+      });
+
+      expect(gameBoard.ships).toHaveLength(1);
+    });
+
+    test("Can place a fleet of ships randomly", () => {
+      const carrier: Ship = new Ship(5, "Carrier");
+      const battleship: Ship = new Ship(4, "Battleship");
+      const destroyer: Ship = new Ship(3, "Destroyer");
+      const submarine: Ship = new Ship(3, "Submarine");
+      const patrolShip: Ship = new Ship(2, "Patrol Ship");
+
+      [carrier, battleship, destroyer, submarine, patrolShip].forEach(
+        (ship) => {
+          expect(gameBoard.placeShipRandomly(ship)).toMatchObject({
+            type: "placed",
+          });
+        },
+      );
+
+      expect(gameBoard.ships).toHaveLength(5);
+    });
+  });
+
+  // This method goes through the ships and board to check if all required ships exist to start the game and whether all the ships are placed correctly.
+  describe(".hasValidFleet() method", () => {
+    test("returns true if you place 5 valid ships", () => {
+      fillEntireBoard();
+      expect(gameBoard.hasValidFleet()).toBeTruthy();
+    });
+
+    test("returns false if you place less than 5 ships", () => {
+      const carrier: Ship = new Ship(5, "Carrier");
+      const battleship: Ship = new Ship(4, "Battleship");
+      gameBoard.placeShip({
+        ship: carrier,
+        positions: extrapolatePositions([0, 0], [0, 4]),
+      });
+      gameBoard.placeShip({
+        ship: battleship,
+        positions: extrapolatePositions([1, 1], [1, 4]),
+      });
+
+      expect(gameBoard.hasValidFleet()).toBeFalsy();
+    });
+
+    test("returns false if you place 5 invalid ships", () => {
+      const carrier: Ship = new Ship(5, "Carrier");
+      const battleship: Ship = new Ship(4, "craft");
+      const destroyer: Ship = new Ship(3, "ex");
+      const submarine: Ship = new Ship(3, "pr");
+      const patrolShip: Ship = new Ship(2, "csdf");
+
+      [
+        { ship: carrier, start: "A6", end: "A10" },
+        { ship: battleship, start: "C1", end: "F1" },
+        { ship: destroyer, start: "C6", end: "C8" },
+        { ship: submarine, start: "A4", end: "C4" },
+        { ship: patrolShip, start: "A1", end: "A2" },
+      ].forEach((ship) =>
+        gameBoard.placeShip({
+          ship: ship.ship,
+          positions: extrapolatePositions(
+            notationToPosition(ship.start),
+            notationToPosition(ship.end),
+          ),
+        }),
+      );
+
+      expect(gameBoard.hasValidFleet()).toBeFalsy();
+    });
+  });
+
+  describe(".resetBoard() method", () => {
+    beforeEach(() => {
+      fillEntireBoard();
+    });
+
+    test("it removes all ships", () => {
+      gameBoard.resetBoard();
+      expect(gameBoard.ships).toHaveLength(0);
+    });
+
+    test("it resets all attacks", () => {
+      expect(gameBoard.receiveAttack(notationToPosition("A3"))).toBeTruthy();
+      expect(gameBoard.attacks).toHaveLength(1);
+
+      gameBoard.resetBoard();
+      expect(gameBoard.attacks).toHaveLength(0);
+    });
+
+    test("it resets the board to initial state", () => {
+      gameBoard.resetBoard();
+      const allUndefined: boolean = gameBoard.board.every((row) =>
+        row.every((cell) => cell === undefined),
+      );
+      expect(allUndefined).toBeTruthy();
+    });
+  });
 });
