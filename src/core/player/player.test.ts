@@ -12,9 +12,21 @@ beforeEach(() => {
   player = new Player(board);
 });
 
+const carrier: Ship = new Ship(5, "Carrier");
+const battleship: Ship = new Ship(4, "Battleship");
+const destroyer: Ship = new Ship(3, "Destroyer");
+const submarine: Ship = new Ship(3, "Submarine");
+const patrolShip: Ship = new Ship(2, "Patrol Ship");
+
+const fleet = [carrier, battleship, destroyer, submarine, patrolShip];
+
 describe("Initialization", () => {
   test("Accepts a board on initialization", () => {
     expect(player.board).toMatchObject(board);
+  });
+
+  test("Creates a fleet of ships", () => {
+    expect(player.fleet).toMatchObject(fleet);
   });
 });
 
@@ -85,6 +97,43 @@ describe("Instance methods", () => {
 
     test("returns false if all ships are not sunk", () => {
       expect(player.hasLost()).toBeFalsy();
+    });
+  });
+
+  describe(".randomizeBoard()", () => {
+    test("puts each ship in the fleet to a random position on the board", () => {
+      const spy = vi.spyOn(board, "placeShipRandomly");
+
+      player.randomizeBoard();
+      expect(spy).toHaveBeenCalledTimes(5);
+      expect(spy).toHaveReturnedWith({ type: "placed" });
+    });
+  });
+
+  describe(".isReady()", () => {
+    test("returns true if all the ships are placed on the board", () => {
+      player.randomizeBoard();
+      expect(player.isReady()).toBeTruthy();
+    });
+
+    test("returns true if all the ships are placed on the board", () => {
+      const ship = new Ship(2, "Patrol Ship");
+      (player.placeShip({
+        ship,
+        positions: [
+          [0, 0],
+          [0, 1],
+        ],
+      }),
+        expect(player.isReady()).toBeFalsy());
+    });
+  });
+
+  describe(".reset()", () => {
+    test("resets the board to initial state", () => {
+      const spy = vi.spyOn(board, "resetBoard");
+      player.reset();
+      expect(spy).toHaveBeenCalledTimes(1);
     });
   });
 });
