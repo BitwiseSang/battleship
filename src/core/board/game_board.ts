@@ -77,7 +77,7 @@ export default class GameBoard {
     // If any of the ship's position is already occupied by a ship already.
     if (
       positions.some((position: Position): boolean =>
-        this.#hasBeenOccupied(position[0], position[1]),
+        this.#hasBeenOccupiedWithBuffer(position[0], position[1]),
       )
     )
       return {
@@ -108,7 +108,7 @@ export default class GameBoard {
       positions === undefined ||
       positions.some((position) => {
         const [row, col] = position;
-        return this.#hasBeenOccupied(row, col);
+        return this.#hasBeenOccupiedWithBuffer(row, col);
       })
     ) {
       const [row, col] = this.#getRandomCoordinates();
@@ -217,6 +217,28 @@ export default class GameBoard {
 
   #hasBeenOccupied(row: number, col: number): boolean {
     return this.#board[row][col] !== undefined;
+  }
+
+  #hasBeenOccupiedWithBuffer(row: number, col: number): boolean {
+    const buffer: number = 1;
+    const possiblePositions = [
+      [row, col],
+      [row + buffer, col + buffer],
+      [row - buffer, col - buffer],
+      [row + buffer, col - buffer],
+      [row - buffer, col + buffer],
+      [row + buffer, col],
+      [row - buffer, col],
+      [row, col + buffer],
+      [row, col - buffer],
+    ];
+    const validPositions = possiblePositions.filter((position) =>
+      this.#validateCoordinates(position[0], position[1]),
+    );
+
+    return validPositions.some((position) =>
+      this.#hasBeenOccupied(position[0], position[1]),
+    );
   }
 
   #getRandomPositions({
