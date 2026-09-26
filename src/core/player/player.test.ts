@@ -28,6 +28,10 @@ describe("Initialization", () => {
   test("Creates a fleet of ships", () => {
     expect(player.fleet).toMatchObject(fleet);
   });
+
+  test("Creates player id", () => {
+    expect(player.id).toBeDefined();
+  });
 });
 
 describe("Instance methods", () => {
@@ -118,14 +122,14 @@ describe("Instance methods", () => {
 
     test("returns true if all the ships are placed on the board", () => {
       const ship = new Ship(2, "Patrol Ship");
-      (player.placeShip({
+      player.placeShip({
         ship,
         positions: [
           [0, 0],
           [0, 1],
         ],
-      }),
-        expect(player.isReady()).toBeFalsy());
+      });
+      expect(player.isReady()).toBeFalsy();
     });
   });
 

@@ -10,11 +10,13 @@ import Ship from "../ship/ship.ts";
 import type { Fleet } from "./types.ts";
 
 export default class Player {
+  readonly #id: string;
   readonly #board: GameBoard;
   readonly #fleet: Fleet;
 
   // oxlint-disable-next-line prefer-readonly-parameter-types
   constructor(gameBoard: GameBoard) {
+    this.#id = crypto.randomUUID();
     this.#board = gameBoard;
     this.#fleet = this.#createFleet();
   }
@@ -41,6 +43,10 @@ export default class Player {
 
   reset(): void {
     this.#board.resetBoard();
+  }
+
+  get id(): string {
+    return this.#id;
   }
 
   get board(): GameBoard {
