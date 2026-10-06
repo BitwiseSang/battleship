@@ -95,7 +95,16 @@ export default class GameBoard {
       col,
     ]);
 
-    this.ships.push({ ship, position: shipPositions });
+    const sortedShipPositions: Positions = shipPositions.toSorted(
+      (a: Position, b: Position) => {
+        if (a[0] != b[0]) {
+          return a[0] - b[0];
+        }
+        return a[1] - b[1];
+      },
+    );
+
+    this.ships.push({ ship, position: sortedShipPositions });
 
     return { type: "placed" };
   }
