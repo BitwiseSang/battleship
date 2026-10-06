@@ -1,0 +1,444 @@
+/* 1. Use a more-intuitive box-sizing model */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* 2. Remove default margin */
+*:not(dialog) {
+  margin: 0;
+}
+
+/* 3. Enable keyword animations */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    interpolate-size: allow-keywords;
+  }
+}
+
+body {
+  /* 4. Increase line-height */
+  line-height: 1.5;
+  /* 5. Improve text rendering */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 6. Improve media defaults */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* 7. Inherit fonts for form controls */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* 8. Avoid text overflows */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+/* 9. Improve line wrapping */
+p {
+  text-wrap: pretty;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-wrap: balance;
+}
+
+/*
+  10. Create a root stacking context
+*/
+#root,
+#__next {
+  isolation: isolate;
+}
+
+:root {
+  /* Colors */
+  --color-bg: #07111f;
+  --color-surface: #0d1b2a;
+  --color-surface-2: #13263a;
+  --color-border: #29445d;
+  --color-text: #e8f1f8;
+  --color-text-muted: #8fa8bb;
+  --color-primary: #38bdf8;
+  --color-primary-hover: #0ea5e9;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-water: #0b5c8e;
+  --color-water-light: #1479b8;
+  --color-ship: #64748b;
+  --color-hit: #ef4444;
+  --color-miss: #cbd5e1;
+
+  /* Typography */
+  --font-sans:
+    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-display: "Dm Sans", sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, monospace;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+
+  /* Board */
+  --board-size: min(80vw, 600px);
+  --cell-size: calc(var(--board-size) / 10);
+  --cell-gap: 1px;
+  --board-border: 2px;
+  --cell-radius: 2px;
+
+  /* Ships */
+  --ship-opacity: 0.9;
+  --ship-border: #94a3b8;
+  --ship-radius: 30px;
+  --ship-front-radius: 9999px;
+
+  /* Effects */
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.25);
+  --shadow-md: 0 8px 24px rgb(0 0 0 / 0.3);
+  --focus-ring: 0 0 0 3px rgb(56 189 248 / 0.35);
+  --transition-fast: 120ms ease;
+  --transition-normal: 200ms ease;
+
+  /* Shape */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 999px;
+
+  /* Layout */
+  --container-max: 1200px;
+  --header-height: 64px;
+  --sidebar-width: 280px;
+  --z-base: 1;
+  --z-board: 10;
+  --z-overlay: 100;
+  --z-modal: 1000;
+  --z-toast: 2000;
+
+  /* Responsive */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  position: relative;
+}
+
+#app {
+  max-width: 100vw;
+  max-height: 100vh;
+  padding: var(--space-6);
+}
+
+h1 {
+  text-align: center;
+  font-size: var(--font-size-2xl);
+  font-family: var(--font-display);
+  color: var(--color-text);
+}
+
+body {
+  background-color: var(--color-bg);
+  font-family: var(--font-sans);
+}
+
+.game-board-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: var(--space-6);
+}
+
+.player-board-container {
+  position: relative;
+}
+
+.game-board,
+.ship-board {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+
+  padding: var(--space-4);
+  /* grid-template-rows: repeat(10, 1fr); */
+  z-index: var(--z-board);
+}
+.game-board {
+  background-color: var(--color-water);
+}
+.ship-board {
+  &:hover {
+    cursor: not-allowed;
+  }
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-overlay);
+}
+
+.game-board__cell,
+.ship-board__cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+}
+.game-board__cell {
+  background-color: var(--color-water);
+  border: var(--board-border) solid var(--color-border);
+
+  &:hover {
+    background-color: var(--color-water-light);
+    cursor: pointer;
+  }
+}
+.ship-board__cell {
+  border: none;
+  background: none;
+  /* opacity: var(--ship-opacity); */
+}
+
+.ship-board__cell__ship {
+  border: 2px solid var(--ship-border);
+  background-color: var(--color-ship);
+  aspect-ratio: 1 / 1;
+}
+
+.ship-board__cell__ship-vertical-start {
+  border-radius: var(--ship-front-radius) var(--ship-front-radius) 0 0;
+  border-bottom: none;
+}
+
+.ship-board__cell__ship-vertical-middle {
+  border-top: none;
+  border-bottom: none;
+}
+
+.ship-board__cell__ship-vertical-end {
+  border-bottom: none;
+  border-top: none;
+
+  border-radius: 0 0 var(--ship-radius) var(--ship-radius);
+}
+
+.ship-board__cell__ship-horizontal-start {
+  border-radius: var(--ship-front-radius) 0 0 var(--ship-front-radius);
+  border-right: none;
+}
+
+.ship-board__cell__ship-horizontal-middle {
+  border-left: none;
+  border-right: none;
+}
+
+.ship-board__cell__ship-horizontal-end {
+  border-left: none;
+
+  border-radius: 0 var(--ship-radius) var(--ship-radius) 0;
+}
+
+.action-buttons-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+
+  .action-buttons {
+  }
+  .action-buttons-container__new-game-btn {
+  }
+}
+
+.cell-disabled {
+  &:hover {
+    cursor: not-allowed;
+  }
+}
+
+.cell-hit {
+  background-color: var(--color-hit);
+
+  &:hover {
+    background-color: var(--color-hit);
+  }
+}
+
+.cell-miss {
+  background-color: var(--color-miss);
+
+  &:hover {
+    background-color: var(--color-miss);
+  }
+}
+
+.ship-board__cell.cell-hit {
+  border: none;
+  background: none;
+}
+.ship-board__cell.cell-hit > .ship-board__cell__ship {
+  border: 2px solid var(--color-hit);
+  background-color: var(--color-hit);
+}
+.ship-board__cell.cell-miss {
+  border: var(--board-border) solid var(--color-border);
+}
+
+.board-disabled {
+  &:hover {
+    cursor: not-allowed;
+  }
+}
+
+.toasts-container {
+  position: absolute;
+  top: var(--space-8);
+  right: var(--space-8);
+
+  z-index: var(--z-toast);
+  width: 250px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: space-between;
+  gap: var(--space-2);
+
+  .toast-container {
+    background-color: white;
+
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: var(--space-2);
+    padding: var(--space-4);
+
+    opacity: 0;
+
+    animation-name: fade-in-out;
+    animation-duration: 3s;
+    animation-iteration-count: 1;
+
+    transition: all 1s ease-in-out;
+
+    .toast {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+
+      .toast-icon-container {
+        width: 24px;
+        aspect-ratio: 1 / 1;
+      }
+
+      .toast__text-container {
+        flex-direction: column;
+        justify-content: center;
+        gap: var(--space-2);
+      }
+
+      .toast__title {
+        font-weight: bold;
+        font-size: var(--font-size-sm);
+        font-family: var(--font-display);
+      }
+      .toast__message {
+        font-size: var(--font-size-xs);
+      }
+    }
+  }
+  .toast__dismiss-btn-container {
+    background-color: none;
+    border: none;
+
+    .toast__dismiss-btn {
+      border-radius: var(--radius-full);
+      border: none;
+      width: 24px;
+      aspect-ratio: 1 / 1;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+
+  .toast-container.success {
+    .toast-icon-container {
+      color: var(--color-success);
+    }
+  }
+  .toast-container.warning {
+    .toast-icon-container {
+      color: var(--color-warning);
+    }
+  }
+  .toast-container.danger {
+    .toast-icon-container {
+      color: var(--color-danger);
+    }
+  }
+}
+
+@keyframes fade-in-out {
+  from {
+    opacity: 0;
+    transform: translateY(-(var(--space-8)));
+  }
+
+  25% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-8rem);
+  }
+}
