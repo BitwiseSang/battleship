@@ -5,6 +5,7 @@ import type {
   PlacementResult,
   Position,
   ShipInformation,
+  Attack,
 } from "../board/types";
 import Ship from "../ship/ship.ts";
 import type { Fleet } from "./types.ts";
@@ -12,7 +13,7 @@ import type { Fleet } from "./types.ts";
 export default class Player {
   readonly #id: string;
   readonly #board: GameBoard;
-  readonly #fleet: Fleet;
+  #fleet: Fleet;
 
   // oxlint-disable-next-line prefer-readonly-parameter-types
   constructor(gameBoard: GameBoard) {
@@ -42,7 +43,26 @@ export default class Player {
   }
 
   reset(): void {
+    this.#fleet = this.#createFleet();
     this.#board.resetBoard();
+  }
+
+  randomAttack(opponent: Player): Position {
+    let position: Position = this.#generateRandomPosition();
+    const attackedPositions = opponent.attacks.map(
+      (attack: Attack): Position => attack.position,
+    );
+
+    while (
+      attackedPositions.some((pos: Position): boolean => {
+        const [attackedRow, attackedColumn] = pos;
+        return attackedRow === position[0] && attackedColumn === position[1];
+      })
+    ) {
+      position = this.#generateRandomPosition();
+    }
+
+    return position;
   }
 
   get id(): string {
@@ -61,6 +81,13 @@ export default class Player {
     return this.#fleet;
   }
 
+  #generateRandomPosition(): Position {
+    const max = 9;
+    const row = Math.floor(Math.random() * max);
+    const col = Math.floor(Math.random() * max);
+
+    return [row, col];
+  }
   #createFleet(): Fleet {
     const carrier: Ship = new Ship(5, "Carrier");
     const battleship: Ship = new Ship(4, "Battleship");

@@ -140,4 +140,18 @@ describe("Instance methods", () => {
       expect(spy).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe(".randomAttack()", () => {
+    test("gives of a valid random attack", () => {
+      const playerTwo = new Player(board);
+
+      const [row, col] = player.randomAttack(playerTwo);
+      const isRowValid = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].includes(row);
+      const isColValid = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].includes(col);
+
+      expect(isRowValid && isColValid).toBeTruthy();
+    });
+
+    test.todo("returns neighboring coordinates if the last attack was an hit", () => {});
+  });
 });
