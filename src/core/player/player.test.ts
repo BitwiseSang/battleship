@@ -142,9 +142,15 @@ describe("Instance methods", () => {
   });
 
   describe(".randomAttack()", () => {
-    test("gives of a valid random attack", () => {
-      const playerTwo = new Player(board);
+    let playerTwo: Player;
+    let playerTwoBoard: GameBoard;
 
+    beforeEach(() => {
+      playerTwoBoard = new GameBoard();
+      playerTwo = new Player(playerTwoBoard);
+    });
+
+    test("gives of a valid random attack", () => {
       const [row, col] = player.randomAttack(playerTwo);
       const isRowValid = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].includes(row);
       const isColValid = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].includes(col);
@@ -152,6 +158,70 @@ describe("Instance methods", () => {
       expect(isRowValid && isColValid).toBeTruthy();
     });
 
-    test.todo("returns neighboring coordinates if the last attack was an hit", () => {});
+    describe("Intelligent random attack", () => {
+      test("returns neighboring coordinates if the last attack was an hit", () => {
+        const ship = new Ship(2, "Patrol Ship");
+        playerTwoBoard.placeShip({
+          ship,
+          positions: [
+            [5, 5],
+            [5, 6],
+          ],
+        });
+
+        playerTwo.receiveAttack([5, 5]);
+
+        const randomPosition = player.randomAttack(playerTwo);
+
+        const isNeighboringAttack = [
+          [4, 5],
+          [5, 4],
+          [5, 6],
+          [6, 5],
+        ].some((neighboringPosition) => {
+          const [neighborRow, neighborCol] = neighboringPosition;
+          const [row, col] = randomPosition;
+          return neighborRow === row && neighborCol === col;
+        });
+
+        expect(isNeighboringAttack).toBeTruthy();
+      });
+
+      test("doesn't return an attacked position", () => {
+        const ship = new Ship(2, "Patrol Ship");
+        playerTwoBoard.placeShip({
+          ship,
+          positions: [
+            [5, 5],
+            [5, 6],
+          ],
+        });
+
+        playerTwo.receiveAttack([4, 5]);
+        playerTwo.receiveAttack([6, 5]);
+        playerTwo.receiveAttack([5, 5]);
+
+        const [row, col] = player.randomAttack(playerTwo);
+
+        const isNeighboringAttack = [
+          [5, 4],
+          [5, 6],
+        ].some((neighboringPosition) => {
+          const [neighborRow, neighborCol] = neighboringPosition;
+          return neighborRow === row && neighborCol === col;
+        });
+
+        const includesAttackedPositions: boolean = [
+          [4, 5],
+          [6, 5],
+        ].some((attackedPosition) => {
+          const [attackedRow, attackedCol] = attackedPosition;
+          return attackedRow === row && attackedCol === col;
+        });
+
+        expect(isNeighboringAttack).toBeTruthy();
+        expect(includesAttackedPositions).toBeFalsy();
+      });
+    });
   });
 });

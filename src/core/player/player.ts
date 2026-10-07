@@ -48,6 +48,16 @@ export default class Player {
   }
 
   randomAttack(opponent: Player): Position {
+    const hasLastAttack = opponent.attacks.length > 0;
+
+    if (hasLastAttack) {
+      return this.#generateIntelligentAttack(opponent);
+    } else {
+      return this.#generateRandomAttack(opponent);
+    }
+  }
+
+  #generateRandomAttack(opponent: Player): Position {
     let position: Position = this.#generateRandomPosition();
     const attackedPositions = opponent.attacks.map(
       (attack: Attack): Position => attack.position,
@@ -63,6 +73,27 @@ export default class Player {
     }
 
     return position;
+  }
+
+  #generateIntelligentAttack(opponent: Player): Position {
+    const lastAttack = opponent.attacks.at(-1)!;
+
+    if (lastAttack.hit) {
+      const positions = opponent.board.generateNeighboringPosition(
+        lastAttack.position,
+      )!;
+
+      if (positions.length > 0) {
+        const [row, col] =
+          positions[Math.floor(Math.random() * positions.length)];
+
+        return [row, col];
+      } else {
+        return this.#generateRandomAttack(opponent);
+      }
+    } else {
+      return this.#generateRandomAttack(opponent);
+    }
   }
 
   get id(): string {
@@ -88,6 +119,7 @@ export default class Player {
 
     return [row, col];
   }
+
   #createFleet(): Fleet {
     const carrier: Ship = new Ship(5, "Carrier");
     const battleship: Ship = new Ship(4, "Battleship");

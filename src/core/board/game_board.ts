@@ -1,7 +1,7 @@
 import type Ship from "../ship/ship.ts";
 import type {
-  Attack,
   Attacks,
+  Attacked,
   AttackResult,
   Positions,
   Position,
@@ -24,6 +24,7 @@ export default class GameBoard {
   #board: Board;
   ships: Ships;
   attacks: Attacks;
+  readonly #attacked: Attacked;
 
   constructor() {
     this.#board = Array.from({ length: 10 }, () =>
@@ -32,6 +33,7 @@ export default class GameBoard {
 
     this.ships = [];
     this.attacks = [];
+    this.#attacked = {};
   }
 
   get hits(): Positions {
@@ -48,6 +50,10 @@ export default class GameBoard {
 
   get board(): ReadOnlyBoard {
     return this.#board;
+  }
+
+  get attacked(): Attacked {
+    return this.#attacked;
   }
 
   placeShip({ ship, positions }: ShipInformation): PlacementResult {
@@ -150,6 +156,8 @@ export default class GameBoard {
 
     this.attacks.push({ position: [row, col], hit: shipPresent });
 
+    this.#attacked[`${row}${col}`] = true;
+
     const shipObject = this.#getShip(row, col);
 
     if (shipObject) shipObject.ship.hit();
@@ -211,16 +219,14 @@ export default class GameBoard {
   }
 
   #hasBeenAttacked(row: number, col: number): boolean {
-    return this.attacks.some(
-      (attack: Attack): boolean =>
-        attack.position[0] === row && attack.position[1] === col,
-    );
+    return this.#attacked[`${row}${col}`] === true;
   }
 
   #validateCoordinates(row: number, col: number): boolean {
     if (row >= 0 && row <= 9 && col >= 0 && col <= 9) {
       return true;
     }
+
     return false;
   }
 
@@ -269,6 +275,30 @@ export default class GameBoard {
     }
 
     return positions;
+  }
+
+  generateNeighboringPosition(position: Position): Positions {
+    const [row, col] = position;
+
+    const possiblePositions: Positions = [
+      [row, col - 1],
+      [row, col + 1],
+      [row + 1, col],
+      [row - 1, col],
+    ];
+
+    const possibleValidPositions = possiblePositions
+      // Check if the coordinates are in range
+      .filter((pos: Position): boolean =>
+        this.#validateCoordinates(pos[0], pos[1]),
+      )
+      // Check if the coordinates have not been attacked
+      .filter(
+        (pos: Position): boolean => !this.#hasBeenAttacked(pos[0], pos[1]),
+      )
+      .map((pos: Position): Position => [pos[0], pos[1]]);
+
+    return possibleValidPositions;
   }
 
   #getRandomCoordinates(): Position {
