@@ -4,7 +4,7 @@ import { extrapolatePositions } from "../../utils/extrapolate-positions.ts";
 import notationToPosition from "../../utils/notation-converter.ts";
 import Ship from "../ship/ship.ts";
 import GameBoard from "./game_board.ts";
-import type { Attack, Positions, ShipInformation } from "./types.ts";
+import type { Attack, Position, Positions, ShipInformation } from "./types.ts";
 
 let gameBoard: GameBoard;
 
@@ -174,6 +174,12 @@ describe("Instance methods", () => {
     test("Records the attack in the attacks array", () => {
       expect(gameBoard.receiveAttack(notationToPosition("A3"))).toBeTruthy();
       expect(gameBoard.attacks).toHaveLength(1);
+    });
+
+    test("Adds the attack position to the attacked object", () => {
+      const position: Position = notationToPosition("A3");
+      expect(gameBoard.receiveAttack(position)).toBeTruthy();
+      expect(gameBoard.attacked[`${position[0]}${position[1]}`]).toBeTruthy();
     });
 
     test("Records a hit if there is a ship in the cell", () => {
@@ -424,6 +430,37 @@ describe("Instance methods", () => {
         row.every((cell) => cell === undefined),
       );
       expect(allUndefined).toBeTruthy();
+    });
+
+    test("it resets attacked object to initial state", () => {
+      const attacks: string[] = [
+        "a6",
+        "a7",
+        "a8",
+        "a9",
+        "a10",
+        "c1",
+        "d1",
+        "e1",
+        "f1",
+        "c6",
+        "c7",
+        "c8",
+        "a4",
+        "b4",
+        "c4",
+        "a1",
+        "a2",
+      ];
+      attacks.forEach((attack) =>
+        gameBoard.receiveAttack(notationToPosition(attack)),
+      );
+
+      expect(gameBoard.allShipsSunk()).toBeTruthy();
+
+      gameBoard.resetBoard();
+
+      expect(Object.entries(gameBoard.attacked)).toHaveLength(0);
     });
   });
 });

@@ -24,7 +24,7 @@ export default class GameBoard {
   #board: Board;
   ships: Ships;
   attacks: Attacks;
-  readonly #attacked: Attacked;
+  #attacked: Attacked;
 
   constructor() {
     this.#board = Array.from({ length: 10 }, () =>
@@ -180,6 +180,7 @@ export default class GameBoard {
 
     this.ships = [];
     this.attacks = [];
+    this.#attacked = {};
   }
 
   hasValidFleet(): boolean {
@@ -219,15 +220,15 @@ export default class GameBoard {
   }
 
   #hasBeenAttacked(row: number, col: number): boolean {
-    return this.#attacked[`${row}${col}`] === true;
+    return this.#attacked[`${row}${col}`];
+  }
+
+  #isInRange(index: number): boolean {
+    return index >= 0 && index <= 9;
   }
 
   #validateCoordinates(row: number, col: number): boolean {
-    if (row >= 0 && row <= 9 && col >= 0 && col <= 9) {
-      return true;
-    }
-
-    return false;
+    return this.#isInRange(row) && this.#isInRange(col);
   }
 
   #hasBeenOccupied(row: number, col: number): boolean {
@@ -295,8 +296,7 @@ export default class GameBoard {
       // Check if the coordinates have not been attacked
       .filter(
         (pos: Position): boolean => !this.#hasBeenAttacked(pos[0], pos[1]),
-      )
-      .map((pos: Position): Position => [pos[0], pos[1]]);
+      );
 
     return possibleValidPositions;
   }

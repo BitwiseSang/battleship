@@ -5,7 +5,7 @@ import type {
   PlacementResult,
   Position,
   ShipInformation,
-  Attack,
+  Positions,
 } from "../board/types";
 import Ship from "../ship/ship.ts";
 import type { Fleet } from "./types.ts";
@@ -59,16 +59,8 @@ export default class Player {
 
   #generateRandomAttack(opponent: Player): Position {
     let position: Position = this.#generateRandomPosition();
-    const attackedPositions = opponent.attacks.map(
-      (attack: Attack): Position => attack.position,
-    );
 
-    while (
-      attackedPositions.some((pos: Position): boolean => {
-        const [attackedRow, attackedColumn] = pos;
-        return attackedRow === position[0] && attackedColumn === position[1];
-      })
-    ) {
+    while (opponent.board.attacked[`${position[0]}${position[1]}`]) {
       position = this.#generateRandomPosition();
     }
 
@@ -79,11 +71,11 @@ export default class Player {
     const lastAttack = opponent.attacks.at(-1)!;
 
     if (lastAttack.hit) {
-      const positions = opponent.board.generateNeighboringPosition(
+      const positions: Positions = opponent.board.generateNeighboringPosition(
         lastAttack.position,
       )!;
 
-      if (positions.length > 0) {
+      if (positions.length) {
         const [row, col] =
           positions[Math.floor(Math.random() * positions.length)];
 
