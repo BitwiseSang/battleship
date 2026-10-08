@@ -126,7 +126,7 @@ export default class GameManager {
 
   #aiAttack() {
     const position: Position = this.#aiPlayer.randomAttack(this.#playerOne);
-    const attackResult: AttackResult = this.#playerOne.receiveAttack(position);
+    const attackResult: AttackResult = this.#game.placeAttack(position);
 
     const cell = this.#app
       .querySelector(`[data-player-id="${this.#playerOne.id}"]`)
