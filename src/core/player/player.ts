@@ -73,9 +73,9 @@ export default class Player {
     if (lastAttack.hit) {
       const positions: Positions = opponent.board.generateNeighboringPosition(
         lastAttack.position,
-      )!;
+      );
 
-      if (positions.length) {
+      if (positions && positions.length) {
         const [row, col] =
           positions[Math.floor(Math.random() * positions.length)];
 
