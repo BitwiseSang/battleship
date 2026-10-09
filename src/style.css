@@ -119,7 +119,7 @@ h6 {
   --board-size: min(80vw, 600px);
   --cell-size: calc(var(--board-size) / 10);
   --cell-gap: 1px;
-  --board-border: 2px;
+  --board-border: 1px;
   --cell-radius: 2px;
 
   /* Ships */
@@ -171,8 +171,11 @@ body {
 
 #app {
   max-width: 100vw;
-  max-height: 100vh;
   padding: var(--space-6);
+
+  @media (max-width: 768px) {
+    padding: var(--space-2);
+  }
 }
 
 h1 {
@@ -192,6 +195,11 @@ body {
   grid-template-columns: repeat(2, 1fr);
 
   gap: var(--space-6);
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(1, 1fr);
+    gap: var(--space-3);
+  }
 }
 
 .player-board-container {
@@ -204,8 +212,11 @@ body {
   grid-template-columns: repeat(10, 1fr);
 
   padding: var(--space-4);
-  /* grid-template-rows: repeat(10, 1fr); */
   z-index: var(--z-board);
+
+  @media (max-width: 768px) {
+    padding: var(--space-2);
+  }
 }
 .game-board {
   background-color: var(--color-water);
@@ -235,11 +246,15 @@ body {
     background-color: var(--color-water-light);
     cursor: pointer;
   }
+
+  @media (max-width: 768px) {
+    border: var(--board-border) solid var(--color-border);
+  }
 }
 .ship-board__cell {
   border: none;
   background: none;
-  /* opacity: var(--ship-opacity); */
+  opacity: var(--ship-opacity);
 }
 
 .ship-board__cell__ship {

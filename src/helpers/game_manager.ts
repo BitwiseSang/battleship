@@ -74,6 +74,7 @@ export default class GameManager {
     this.#app.querySelector(".game-board-container")?.remove();
 
     if (this.#game.resetGame()) {
+      Toast.success("Reset successful");
       this.startGame();
     } else {
       Toast.failure(
