@@ -105,7 +105,7 @@ export default class Player {
   }
 
   #generateRandomPosition(): Position {
-    const max = 9;
+    const max = 10;
     const row = Math.floor(Math.random() * max);
     const col = Math.floor(Math.random() * max);
 
